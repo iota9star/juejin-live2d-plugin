@@ -1,0 +1,10 @@
+root = true
+
+[*.{js, json, css, styl, less, scss, sass, xml, html}]
+charset = utf-8
+indent_style = space
+indent_size = 2
+end_of_line = crlf
+trim_trailing_whitespace = true
+insert_final_newline = false
+max_line_length = 120

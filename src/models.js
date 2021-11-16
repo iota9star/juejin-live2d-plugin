@@ -1,0 +1,1 @@
+export default [{"key":"hijiki","value":"public/models/hijiki/hijiki.model.json","inner":true},{"key":"tororo","value":"public/models/tororo/tororo.model.json","inner":true}];
