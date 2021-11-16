@@ -5,10 +5,10 @@
 // @description  为掘金页面添加live2d形象，辅助实现一些功能
 // @require      https://cubism.live2d.com/sdk-web/cubismcore/live2dcubismcore.min.js
 // @require      https://cdn.jsdelivr.net/gh/dylanNew/live2d/webgl/Live2D/lib/live2d.min.js
-// @require      https://192.168.2.191:12345/public/bundle.min.js?41asdasdghfsassdaddasdaddasdasasdaasdasdasd
+// @require      https://cdn.jsdelivr.net/gh/iota9star/juejin-live2d-plugin@master/public/bundle.min.js?v0.1.0
 // @author       iota9star
 // @match        juejin.cn/*
-// @icon         https://www.google.com/s2/favicons?domain=juejin.cn
+// @icon         https://lf3-cdn-tos.bytescm.com/obj/static/xitu_juejin_web/6bdafd801c878b10edb5fed5d00969e9.svg
 // @grant GM_setValue
 // @grant GM_getValue
 // @grant GM_xmlhttpRequest
@@ -479,7 +479,6 @@ class JuejinLive2dPlugin {
     const that = this;
     setTimeout(() => {
       ls.setItem(that.config.key, JSON.stringify(that.config));
-      console.log(that.config);
     }, 0);
   }
 
