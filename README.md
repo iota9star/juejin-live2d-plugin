@@ -61,7 +61,7 @@ GIF录制帧数和像素有点糊，实际效果还是不错的。猛男喜欢�
 // @description  为掘金页面添加live2d形象，辅助实现一些功能
 // @require      https://cubism.live2d.com/sdk-web/cubismcore/live2dcubismcore.min.js
 // @require      https://cdn.jsdelivr.net/gh/dylanNew/live2d/webgl/Live2D/lib/live2d.min.js
-// @require      https://cdn.jsdelivr.net/gh/iota9star/juejin-live2d-plugin@master/public/bundle.0.1.1.min.js
+// @require      https://cdn.jsdelivr.net/gh/iota9star/juejin-live2d-plugin@master/public/bundle.0.1.2.min.js
 // @author       iota9star
 // @match        juejin.cn/*
 // @icon         https://lf3-cdn-tos.bytescm.com/obj/static/xitu_juejin_web/6bdafd801c878b10edb5fed5d00969e9.svg
@@ -83,6 +83,10 @@ GIF录制帧数和像素有点糊，实际效果还是不错的。猛男喜欢�
 ```
 
 ### 版本更新
+
+- 0.1.2
+
+> 修复调整尺寸时，可能切换其他模型的问题
 
 - 0.1.1  
 

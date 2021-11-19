@@ -333,7 +333,7 @@ class JuejinLive2dPlugin {
         hideLoading() {
           setTimeout(() => {
             this.loading = false;
-          }, 500);
+          }, 150);
         },
         handleDraggableChange() {
           document.getElementById(live2dElId).draggable = !!this.config.live2d.draggable;
@@ -361,11 +361,10 @@ class JuejinLive2dPlugin {
             return;
           }
           this.config.models = [...this.config.models, { ...this.newModel }];
-          that.config = this.config;
           this.selectedKey = this.newModel.key;
           this.showLoading("加载模型中，请稍候...");
+          that.config = this.config;
           that.switchModel(this.newModel.value).then(() => {
-            that.config = this.config;
             that.syncConfig();
           }).catch(e => {
             console.log(e);
@@ -382,6 +381,7 @@ class JuejinLive2dPlugin {
         },
         handleSizeInputBlur() {
           this.showLoading("重新布局中，请稍候...");
+          that.config = this.config;
           that.relayoutWidget().then((val) => {
             if (val) {
               that.syncConfig();
