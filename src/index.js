@@ -65,7 +65,6 @@ class JuejinLive2dPlugin {
     const item = ls.getItem(config.key);
     const pConfig = !item ? {} : JSON.parse(item);
     this.config = _merge({}, config, pConfig);
-    console.log(this.config);
     this.intervalSayConf = {
       sayExpire: 0,
       minDelay: 5000,
@@ -445,7 +444,6 @@ class JuejinLive2dPlugin {
   async switchModel(nameOrPath) {
     const that = this;
     nameOrPath = nameOrPath || that.config.live2d.model.value;
-    console.log(nameOrPath);
     if (/http[s]?:\/\//.test(nameOrPath)) {
       await that.loadLive2d(nameOrPath);
       return;

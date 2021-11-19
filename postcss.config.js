@@ -1,8 +1,8 @@
 module.exports = {
-    plugins: {
-        autoprefixer: {
-            overrideBrowserslist: [`> 0%`],
-            grid: true,
-        },
+  plugins: {
+    autoprefixer: {
+      overrideBrowserslist: [`> 0%`],
+      grid: true,
     },
+  },
 };

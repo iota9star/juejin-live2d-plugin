@@ -169,7 +169,6 @@ export default {
     try {
       let matched = /var\s+config\s*=({.*conversationId.*?})/gm.exec(resp.toString());
       let cs = matched[1];
-      console.log(cs);
       if (cs) {
         this.xiaoiceStore.config = JSON.parse(cs);
       }
