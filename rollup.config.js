@@ -6,6 +6,7 @@ import polyfillNode from 'rollup-plugin-polyfill-node';
 import styles from "rollup-plugin-styles";
 import fs from 'fs';
 import * as path from "path";
+import {version} from './package.json';
 
 
 function fileTree(dir, files = []) {
@@ -43,7 +44,7 @@ export default function () {
     return {
         input: 'src/index.js',
         output: {
-            file: 'public/bundle.min.js',
+            file:  `public/bundle.${version}.min.js`,
             format: 'iife',
             plugins: [terser()]
         },

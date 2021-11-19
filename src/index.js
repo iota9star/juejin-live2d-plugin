@@ -540,6 +540,7 @@ class JuejinLive2dPlugin {
     const that = this;
     const map = {
       all_article: "文章总数",
+      all_article_display: "文章展现数",
       all_article_collect: "文章收藏数",
       all_article_view: "文章阅读数",
       all_article_digg: "文章点赞数",
@@ -613,7 +614,7 @@ class JuejinLive2dPlugin {
     const [err, data] = await to(api.growthCount());
     if (err || !data) return;
     const { count, sum } = data;
-    let domStr = `喵喵，主人已经连续签到 <b style="color: #ff7d00;">${count}</b> 天啦，总共签到 <b style="color: #ff7d00;">${sum}</b>天。`;
+    let domStr = `喵喵，主人已经连续签到 <b style="color: #ff7d00;">${count}</b> 天啦，总共签到 <b style="color: #ff7d00;">${sum}</b> 天。`;
     const [, dat] = await to(api.growthPoints());
     if (dat) {
       domStr += `您现在共有 <b style="color: #ff7d00;">${dat}</b> 矿石`;
