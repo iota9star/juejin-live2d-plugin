@@ -12,6 +12,18 @@ $-primary-color: #1e80ff;
   font-size: 12px;
   overflow: hidden;
 
+  .p-i {
+    flex-wrap: wrap;
+    white-space: nowrap;
+    padding: 4px 6px;
+    text-overflow: ellipsis;
+    color: white;
+    font-size: 12px;
+    background-color: $-primary-color;
+    max-width: 100%;
+    overflow: hidden;
+  }
+
   * {
     margin: 0;
     padding: 0;
@@ -25,7 +37,8 @@ $-primary-color: #1e80ff;
     transform: translate(-50%, -50%);
     background-color: #fff;
     padding: 20px;
-    max-width: 640px;
+    max-width: 720px;
+    min-width: 420px;
     box-shadow: 0 1px 2px 0 rgb(0 0 0 / 5%);
 
     h2 {
@@ -107,6 +120,8 @@ $-primary-color: #1e80ff;
     input[type=radio] {
       width: 16px;
       height: 16px;
+      min-width: 16px;
+      min-height: 16px;
 
       &:checked {
         border-color: $-primary-color;
@@ -175,12 +190,31 @@ $-primary-color: #1e80ff;
       margin-right: 8px;
     }
 
+    .mr--8 {
+      margin-right: -8px;
+    }
+
     .mr-12 {
+      margin-right: 12px;
+    }
+
+    .mr-16 {
       margin-right: 12px;
     }
 
     .mr-4 {
       margin-right: 4px;
+    }
+
+    .w0 {
+      width: 0;
+    }
+
+    .lh32 {
+      line-height: 32px;
+    }
+    .lh0{
+      line-height: 0;
     }
   }
 }
@@ -198,10 +232,13 @@ $-primary-color: #1e80ff;
 
 #juejin-live2d-widget {
   position: fixed;
-  left: 24px;
-  bottom: 24px;
+  left: 0;
+  bottom: 0;
+  cursor: grab;
   width: 240px;
+  transition: transform .3s;
   z-index: 9999999;
+  box-sizing: border-box;
 
   > input {
     width: 100%;
@@ -211,7 +248,7 @@ $-primary-color: #1e80ff;
     height: 32px;
     line-height: 32px;
     border-radius: 12px;
-    animation: live2d-msgbox-shake 78s ease-in-out 5s infinite;
+    animation: live2d-msgbox-shake 108s ease-in-out 5s infinite;
     box-sizing: border-box;
     transition: all .3s;
   }
@@ -229,7 +266,7 @@ $-primary-color: #1e80ff;
       font-size: 12px;
       border-radius: 12px;
       color: #666;
-      animation: live2d-msgbox-shake 84s ease-in-out 5s infinite;
+      animation: live2d-msgbox-shake 96s ease-in-out 5s infinite;
       text-align: justify;
     }
 
@@ -250,13 +287,32 @@ $-primary-color: #1e80ff;
 #juejin-live2d-msgbox {
   border-radius: 12px;
   color: #666;
-  animation: live2d-msgbox-shake 90s ease-in-out 5s infinite;
+  animation: live2d-msgbox-shake 120s ease-in-out 5s infinite;
   box-sizing: border-box;
   transition: all .3s;
   box-shadow: 1px 1px 3px rgba(0, 0, 0, .1);
   font-size: 0;
   cursor: pointer;
   margin-bottom: 16px;
+  position: relative;
+
+  > .nt {
+    position: absolute;
+    right: -12px;
+    top: -12px;
+    z-index: 9;
+    width: 24px;
+    height: 24px;
+    line-height: 0;
+    white-space: nowrap;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background-color: #fff;
+    box-shadow: 0 0 4px rgba(0, 0, 0, .1);
+  }
 
   * {
     margin: 0;
@@ -282,9 +338,9 @@ $-primary-color: #1e80ff;
     flex-wrap: wrap;
     font-size: 12px;
 
-    > div {
+    &-item {
       width: 50%;
-      margin-bottom: 8px;
+      margin-bottom: 6px;
 
       p {
         &:nth-child(1) {

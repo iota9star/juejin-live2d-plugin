@@ -4,7 +4,8 @@ const model = models[0];
 
 export default {
   publicUrl: "https://cdn.jsdelivr.net/gh/iota9star/juejin-live2d-plugin@master",
-  key: "<<<>juejin-live2d-plugin<>>>",
+  key: "<-juejin-live2d-plugin->",
+  disablePattern: [],
   domids: {
     live2d: "juejin-live2d-canvas",
     widget: "juejin-live2d-widget",
@@ -13,6 +14,11 @@ export default {
   },
   live2d: {
     model,
+    draggable: true,
+    size: 240,
+  },
+  widgets: {
+    enabled: true,
     draggable: true,
     size: 240,
   },

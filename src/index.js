@@ -1,30 +1,3 @@
-// ==UserScript==
-// @name         掘金live2d插件
-// @namespace    https://github.com/iota9star
-// @version      0.1.0
-// @description  为掘金页面添加live2d形象，辅助实现一些功能
-// @require      https://cubism.live2d.com/sdk-web/cubismcore/live2dcubismcore.min.js
-// @require      https://cdn.jsdelivr.net/gh/dylanNew/live2d/webgl/Live2D/lib/live2d.min.js
-// @require      https://cdn.jsdelivr.net/gh/iota9star/juejin-live2d-plugin@master/public/bundle.min.js?v0.1.0
-// @author       iota9star
-// @match        juejin.cn/*
-// @icon         https://lf3-cdn-tos.bytescm.com/obj/static/xitu_juejin_web/6bdafd801c878b10edb5fed5d00969e9.svg
-// @grant GM_setValue
-// @grant GM_getValue
-// @grant GM_xmlhttpRequest
-// @run-at document-idle
-// @connect      juejin.cn
-// @connect      juejin.im
-// @connect      juejin.org
-// @connect      jsdelivr.net
-// @connect      github.com
-// @connect      hitokoto.cn
-// @connect      jinrishici.com
-// @connect      weibo.com
-// @connect      weibo.cn
-// @connect      bing.com
-// ==/UserScript==
-
 import "./index.scss";
 import _config from "./config";
 import { ls } from "./fake";
@@ -38,6 +11,7 @@ import { InteractionManager } from "@pixi/interaction";
 import { Live2DModel } from "pixi-live2d-display";
 import { createApp } from "petite-vue";
 import _merge from "lodash/merge";
+import minimatch from "minimatch";
 
 // register the Ticker to support automatic updating of Live2D models
 Application.registerPlugin(TickerPlugin);
@@ -45,14 +19,6 @@ Live2DModel.registerTicker(Ticker);
 
 // register the InteractionManager to support automatic interaction of Live2D models
 Renderer.registerPlugin("interaction", InteractionManager);
-
-const {
-  live2d: live2dElId,
-  widget: widgetElId,
-  msgbox: msgboxElId,
-  config: configElId,
-} = _config.domids;
-
 
 const key = Symbol(_config.key);
 if (window[key] && window[key].destroy) {
@@ -65,6 +31,10 @@ class JuejinLive2dPlugin {
     const item = ls.getItem(config.key);
     const pConfig = !item ? {} : JSON.parse(item);
     this.config = _merge({}, config, pConfig);
+    this.live2dElId = config.domids.live2d;
+    this.widgetElId = config.domids.widget;
+    this.msgboxElId = config.domids.msgbox;
+    this.configElId = config.domids.config;
     this.intervalSayConf = {
       sayExpire: 0,
       minDelay: 5000,
@@ -78,6 +48,11 @@ class JuejinLive2dPlugin {
     const that = this;
     if (that.intervalSayConf.timer) {
       clearInterval(that.intervalSayConf.timer);
+      that.intervalSayConf = undefined;
+    }
+    if (that.showOrHideTimer) {
+      clearInterval(that.showOrHideTimer);
+      that.showOrHideTimer = undefined;
     }
     if (that.app) {
       that.app.destroy();
@@ -87,6 +62,7 @@ class JuejinLive2dPlugin {
   initLive2d() {
     const that = this;
     that.insertLive2d();
+    that.insertWidgets();
     that.createLive2d();
     that.switchModel().catch(e => {
       console.log(e);
@@ -96,6 +72,7 @@ class JuejinLive2dPlugin {
     });
     that.registerEvents();
     that.intervalSay();
+    that.showOrHideWidgets();
     return that;
   }
 
@@ -105,7 +82,7 @@ class JuejinLive2dPlugin {
       that.app.destroy();
     }
     that.app = new Application({
-      view: document.getElementById(live2dElId),
+      view: document.getElementById(that.live2dElId),
       autoStart: true,
       backgroundAlpha: 0,
     });
@@ -113,7 +90,7 @@ class JuejinLive2dPlugin {
 
   async loadLive2d(path) {
     const that = this;
-    that.limitWidget();
+    that.limitLive2d();
     const model = await Live2DModel.from(path);
     const size = that.config.live2d.size;
     const width = model.width;
@@ -131,7 +108,7 @@ class JuejinLive2dPlugin {
       wh = size;
       ww = Math.ceil(wh * ratio);
     }
-    const widget = document.getElementById(live2dElId);
+    const widget = document.getElementById(that.live2dElId);
     widget.style.width = `${ww}px`;
     widget.style.height = `${wh}px`;
     let live2d = that.config.live2d;
@@ -151,6 +128,7 @@ class JuejinLive2dPlugin {
       clearInterval(that.intervalSayConf.timer);
     }
     that.intervalSayConf.timer = setInterval(() => {
+      if (!that.visible || that.disabled || !that.config.widgets.enabled) return;
       const now = Date.now();
       if (now - that.intervalSayConf.sayExpire > that.intervalSayConf.minDelay) {
         that.sayRandom();
@@ -165,13 +143,42 @@ class JuejinLive2dPlugin {
       that.visible = !document.hidden;
       if (that.visible) that.showMsg("喵喵，欢迎回来～");
     });
+    if (that.showOrHideTimer) {
+      clearInterval(that.showOrHideTimer);
+    }
+    that.showOrHideTimer = setInterval(() => {
+      const href = window.location.href;
+      if (href !== that.url) {
+        that.url = href;
+        that.showOrHideWidgets();
+      }
+    }, 1000);
+  }
+
+  showOrHideWidgets() {
+    const that = this;
+    const pattern = that.config.disablePattern || [];
+    that.disabled = pattern.some(it => {
+      const matched = minimatch(that.url, it);
+      console.log(that.url, it, matched);
+      return matched;
+    });
+    if (that.disabled) {
+      that.hideLive2d();
+      that.hideWidgets();
+    } else {
+      that.showLive2d();
+      if (that.config.widgets.enabled) {
+        that.showWidgets();
+      }
+    }
   }
 
   insertLive2d() {
     const that = this;
-    if (!document.getElementById(live2dElId)) {
-      const config = that.config;
+    if (!document.getElementById(that.live2dElId)) {
       const live2d = document.createElement("canvas");
+      const config = that.config;
       const { position } = config.live2d;
       if (position) {
         that.addStyle(live2d, "transform", `translate(${position.left}px,${position.top}px)`);
@@ -181,7 +188,7 @@ class JuejinLive2dPlugin {
         that.config.live2d.position = { left: 0, top };
         that.addStyle(live2d, "transform", `translate(0px,${top}px)`);
       }
-      live2d.id = live2dElId;
+      live2d.id = that.live2dElId;
       live2d.draggable = config.live2d.draggable;
       let elX = 0;
       let elY = 0;
@@ -221,11 +228,54 @@ class JuejinLive2dPlugin {
       };
       document.body.append(live2d);
     }
-    if (!document.getElementById(widgetElId)) {
+  }
+
+  insertWidgets() {
+    const that = this;
+    if (!document.getElementById(that.widgetElId)) {
       const wrapper = document.createElement("div");
-      wrapper.id = widgetElId;
+      const { position } = that.config.widgets;
+      if (position) {
+        that.addStyle(wrapper, "transform", `translate(${position.left}px,${-position.bottom}px)`);
+      } else {
+        that.config.widgets.position = { left: 24, bottom: 24 };
+      }
+      wrapper.id = that.widgetElId;
+      wrapper.draggable = that.config.widgets.draggable;
+      let elX = 0;
+      let elY = 0;
+      let dragStartX = 0;
+      let dragStartY = 0;
+      wrapper.ondragstart = (e) => {
+        const { left, top } = e.target.getBoundingClientRect();
+        elX = left;
+        elY = top;
+        dragStartX = e.clientX;
+        dragStartY = e.clientY;
+      };
+      wrapper.ondragend = (e) => {
+        let left = e.clientX - (dragStartX - elX);
+        let top = e.clientY - (dragStartY - elY);
+        if (left < 0) {
+          left = 0;
+        }
+        if (top < 0) {
+          top = 0;
+        }
+        const { width, height } = e.target.getBoundingClientRect();
+        const { clientWidth, clientHeight } = document.documentElement;
+        if (left + width > clientWidth) {
+          left = clientWidth - width;
+        }
+        if (top + height > clientHeight) {
+          top = clientHeight - height;
+        }
+        let bottom = clientHeight - (top + height);
+        that.config.widgets.position = { left, bottom };
+        that.relayoutWidgets();
+      };
       const box = document.createElement("div");
-      box.id = msgboxElId;
+      box.id = that.msgboxElId;
       box.onclick = () => {
         that.sayRandom();
       };
@@ -239,9 +289,10 @@ class JuejinLive2dPlugin {
           const words = chatIn.value;
           if (words) {
             chatIn.value = "";
-            while (msgs.children.length > 3) {
+            while (msgs.children.length > 5) {
               msgs.removeChild(msgs.firstChild);
             }
+            that.relayoutWidgets();
             const msg = document.createElement("div");
             msg.setAttribute("class", "jlp-r-msg jlp-msg");
             msg.innerHTML = words;
@@ -254,48 +305,130 @@ class JuejinLive2dPlugin {
             }).catch(e => {
               console.log(e);
             }).finally(() => {
+              while (msgs.children.length > 5) {
+                msgs.removeChild(msgs.firstChild);
+              }
+              that.relayoutWidgets();
             });
           }
         }
       };
       wrapper.append(chatIn);
       document.body.append(wrapper);
+      that.relayoutWidgets();
     }
   }
 
+  limitWidgets() {
+    const that = this;
+    const widgets = that.config.widgets;
+    const { clientWidth, clientHeight } = document.documentElement;
+    let { left, bottom } = widgets.position;
+    let { width, height } = document.getElementById(that.widgetElId).getBoundingClientRect();
+    if (width > clientWidth) {
+      width = clientWidth;
+    }
+    if (width < 180) {
+      width = 180;
+    }
+    if (left < 0) {
+      left = 0;
+    }
+    if (bottom < 0) {
+      bottom = 0;
+    }
+    if (left + width > clientWidth) {
+      left = clientWidth - width;
+    }
+    if (bottom + height > clientHeight) {
+      bottom = clientHeight - height;
+    }
+    left = Math.floor(left);
+    bottom = Math.floor(bottom);
+    widgets.position = { left, bottom };
+    that.syncConfig();
+  }
+
+
+  showLive2d() {
+    const that = this;
+    document.getElementById(that.live2dElId).style.display = "block";
+  }
+
+  hideLive2d() {
+    const that = this;
+    document.getElementById(that.live2dElId).style.display = "none";
+  }
+
+  showWidgets() {
+    const that = this;
+    document.getElementById(that.widgetElId).style.display = "block";
+  }
+
+  hideWidgets() {
+    const that = this;
+    document.getElementById(that.widgetElId).style.display = "none";
+  }
 
   showConfigPanel() {
     const that = this;
-    if (!document.getElementById(configElId)) {
+    if (!document.getElementById(that.configElId)) {
       const wrapper = document.createElement("div");
-      wrapper.id = configElId;
+      wrapper.id = that.configElId;
       const dialog = document.createElement("div");
       wrapper.append(dialog);
       dialog.innerHTML = `<h2 class="f ai-c"><span class="f1">掘金Live2d插件配置</span><span @click="handleClose">&times;</span></h2>
 <div class="f ai-c mb-16">
-    <label for="draggable_jlp" class="mw64">启用拖拽</label>
-    <input type="checkbox" @change="handleDraggableChange" v-model="config.live2d.draggable" id="draggable_jlp">
+  <div class="f ai-c mr-16">
+    <label for="draggable_model_jlp" class="mw64 lh0">模型拖拽</label>
+    <input type="checkbox" @change="handleModelDraggableChange" v-model="config.live2d.draggable"
+           id="draggable_model_jlp">
+  </div>
+  <div class="f ai-c mr-16">
+    <label for="draggable_info_jlp" class="mw64 lh0">信息拖拽</label>
+    <input type="checkbox" @change="handleInfoDraggableChange" v-model="config.widgets.draggable"
+           id="draggable_info_jlp">
+  </div>
+  <div class="f ai-c">
+    <label for="show_info_jlp" class="mw64 lh0">显示信息</label>
+    <input type="checkbox" @change="handleInfoEnableChange" v-model="config.widgets.enabled" id="show_info_jlp">
+  </div>
 </div>
 <div class="f ai-c mb-16">
-    <label for="size_jlp" class="mw64">模型尺寸</label>
-    <input id="size_jlp" min="100" max="1080" type="number" placeholder="尺寸" v-model.num="config.live2d.size" @blur="handleSizeInputBlur">
+  <label for="size_jlp" class="mw64">模型尺寸</label>
+  <input id="size_jlp" min="100" max="1080" type="number" placeholder="尺寸" v-model.num="config.live2d.size"
+         @blur="handleSizeInputBlur">
 </div>
 <div class="f ai-fs mb-16">
-    <label class="mw64">使用模型</label>
+  <label class="mw64">使用模型</label>
+  <div class="f1">
     <div class="f ai-c fw-w">
-        <label :for="item.key+'_jlp'" v-for="item in config.models" class="f ai-c fw-nw mr-8 mb-8">
-            <input type="radio" v-model="selectedKey" :id="item.key+'_jlp'"
-                   name="model" :value="item.key" class="mr-4" @change="handleSelectedModel(item)">
-            {{item.key}}
-        </label>
+      <label :for="item.key+'_jlp'" v-for="item in config.models" class="f ai-c fw-nw mr-8 mb-8" :title="item.key">
+        <input type="radio" v-model="selectedKey" :id="item.key+'_jlp'"
+               name="model" :value="item.key" class="mr-4" @change="handleSelectedModel(item)">
+        {{item.key}}
+      </label>
     </div>
+    <div class="f ai-c">
+      <input type="text" placeholder="模型名称" v-model.trim="newModel.key" @focus="err=''" :disabled="newModel.inner"
+             class="mr-8 f1">
+      <input type="text" placeholder="模型地址" v-model.trim="newModel.value" @focus="err=''" :disabled="newModel.inner"
+             class="mr-8 f2">
+      <button @click="handleAddModel()" :disabled="newModel.inner">添加并使用</button>
+    </div>
+  </div>
 </div>
-<div class="f ai-c mb-8">
-    <input type="text" placeholder="模型名称" v-model.trim="newModel.key" @focus="err=''" :disabled="newModel.inner"
-           class="mr-8 f1">
-    <input type="text" placeholder="模型地址" v-model.trim="newModel.value" @focus="err=''" :disabled="newModel.inner"
-           class="mr-8 f2">
-    <button @click="handleAddModel()" :disabled="newModel.inner">添加并使用</button>
+<div class="f ai-fs mb-16">
+  <label for="disable_jlp" class="mw64 lh32">禁用页面</label>
+  <div class="f1 w0">
+    <div class="f ai-c fw-w mr--8">
+      <span class="p-i mr-8 mb-8" v-for="item in config.disablePattern" :title="item">{{item}}</span>
+    </div>
+    <div class="f ai-c">
+      <input class="f1 mr-8" id="disable_jlp" type="text" placeholder="匹配页面规则（glob）" v-model.trim="disablePattern">
+      <button @click="handleAddPattern()" :disabled="!disablePattern">添加</button>
+    </div>
+  </div>
 </div>
 <div v-if="err" style="color: red;">{{err}}</div>
 <div class="loading" v-if="loading">{{loadingTips}}</div>
@@ -310,9 +443,18 @@ class JuejinLive2dPlugin {
           key: "",
           value: "",
         },
+        disablePattern: "",
         err: "",
         loadingTips: "加载中...",
         loading: false,
+        handleAddPattern() {
+          const pattern = this.disablePattern;
+          this.config.disablePattern.push(pattern);
+          that.config = this.config;
+          that.syncConfig();
+          that.showOrHideWidgets();
+          this.disablePattern = "";
+        },
         handleSelectedModel(model) {
           this.config.live2d.model = model;
           this.selectedKey = model.key;
@@ -333,10 +475,25 @@ class JuejinLive2dPlugin {
         hideLoading() {
           setTimeout(() => {
             this.loading = false;
-          }, 150);
+          }, 200);
         },
-        handleDraggableChange() {
-          document.getElementById(live2dElId).draggable = !!this.config.live2d.draggable;
+        handleModelDraggableChange() {
+          document.getElementById(that.live2dElId).draggable = !!this.config.live2d.draggable;
+          that.config = this.config;
+          that.syncConfig();
+        },
+        handleInfoDraggableChange() {
+          document.getElementById(that.widgetElId).draggable = !!this.config.widgets.draggable;
+          that.config = this.config;
+          that.syncConfig();
+        },
+        handleInfoEnableChange() {
+          const enabled = this.config.widgets.enabled;
+          if (enabled) {
+            that.showWidgets();
+          } else {
+            that.hideWidgets();
+          }
           that.config = this.config;
           that.syncConfig();
         },
@@ -377,7 +534,7 @@ class JuejinLive2dPlugin {
           };
         },
         handleClose() {
-          document.getElementById(configElId).style.display = "none";
+          document.getElementById(that.configElId).style.display = "none";
         },
         handleSizeInputBlur() {
           this.showLoading("重新布局中，请稍候...");
@@ -394,10 +551,10 @@ class JuejinLive2dPlugin {
         },
       }).mount(dialog);
     }
-    document.getElementById(configElId).style.display = "block";
+    document.getElementById(that.configElId).style.display = "block";
   }
 
-  limitWidget() {
+  limitLive2d() {
     const that = this;
     const live2d = that.config.live2d;
     const { clientWidth, clientHeight } = document.documentElement;
@@ -459,7 +616,7 @@ class JuejinLive2dPlugin {
 
   showDom(domStr, style) {
     const that = this;
-    const box = document.getElementById(msgboxElId);
+    const box = document.getElementById(that.msgboxElId);
     if (!style) {
       style = {
         backgroundColor: "#fff",
@@ -471,6 +628,16 @@ class JuejinLive2dPlugin {
       that.addStyle(box, key, value);
     }
     box.innerHTML = domStr;
+    that.relayoutWidgets();
+  }
+
+  relayoutWidgets() {
+    const that = this;
+    setTimeout(() => {
+      that.limitWidgets();
+      that.addStyle(document.getElementById(that.widgetElId), "transform",
+        `translate(${that.config.widgets.position.left}px,${-that.config.widgets.position.bottom}px)`);
+    }, 0);
   }
 
   syncConfig() {
@@ -488,7 +655,8 @@ class JuejinLive2dPlugin {
     const messageType = [
       that.sayHi, that.sayTime, that.sayCheckin, that.sayCoderCalendar,
       that.sayGrowth, that.sayHitokoto, that.sayShici, that.sayStatistic,
-      that.sayAdvert, that.sayEvent, that.sayWeibo,
+      that.sayAdvert, that.sayEvent, that.sayWeibo, that.sayDuanzi,
+      that.sayJitang, that.sayRainbowfart,
     ];
     const index = Math.floor(Math.random() * messageType.length);
     const promise = messageType[index].call(that);
@@ -513,7 +681,7 @@ class JuejinLive2dPlugin {
     const [err, data] = await to(api.event());
     if (err || !data) return;
     const { image_center_web: picture, url, title } = data;
-    const domStr = `<a href="${url}" style="text-decoration: none;"><img style="width: 100%;border-radius: 12px;" src="${picture}" alt="${title}"></a>`;
+    const domStr = `<span class="nt">»</span><a href="${url}" style="text-decoration: none;"><img style="width: 100%;border-radius: 12px;" src="${picture}" alt="${title}"></a>`;
     that.showDom(domStr, {
       backgroundColor: "transparent",
       padding: "0px",
@@ -526,7 +694,7 @@ class JuejinLive2dPlugin {
     const [err, data] = await to(api.adverts());
     if (err || !data) return;
     const { picture, url, title } = data;
-    const domStr = `<a href="${url}" style="text-decoration: none;"><img style="width: 100%;border-radius: 12px;" src="${picture}" alt="${title}"></a>`;
+    const domStr = `<span class="nt">»</span><a href="${url}" style="text-decoration: none;"><img style="width: 100%;border-radius: 12px;" src="${picture}" alt="${title}"></a>`;
     that.showDom(domStr, {
       backgroundColor: "transparent",
       padding: "0px",
@@ -561,7 +729,7 @@ class JuejinLive2dPlugin {
     for (let [key, { cnt, than_before }] of Object.entries(datas)) {
       let name = map[key];
       domStr += `
-                <div>
+                <div class="stat-item">
                     <p>${name}</p>
                     <p>${cnt.toLocaleString()}</p>
                     <p>${than_before === 0 ? "平" : than_before > 0 ? `增` : `减`} <span class="${than_before === 0 ? "n" : than_before > 0 ? `i` : `d`}">${than_before === 0 ? "--" : than_before > 0 ? `${than_before.toLocaleString()} ↑` : `${Math.abs(than_before).toLocaleString()} ↓`}</span></p>
@@ -641,6 +809,36 @@ class JuejinLive2dPlugin {
             <p style="padding-bottom: 8px;">喵喵，来自 <b style="color: #ff7d00;">${from}</b> 的一言</p>
             <p style="border-top: 1px solid #f4f4f4;padding-top: 8px;"><b>${hitokoto}</b></p>
         `;
+    that.showDom(domStr);
+  }
+
+  async sayJitang() {
+    const that = this;
+    const [err, data] = await to(api.jitang());
+    if (err || !data) return;
+    let domStr = `
+            <p style="padding-bottom: 8px;">喵喵，来自 <b style="color: #ff7d00;">鸡汤</b> </p>
+            <p style="border-top: 1px solid #f4f4f4;padding-top: 8px;"><b>${data}</b></p>
+        `;
+    that.showDom(domStr);
+  }
+
+  async sayDuanzi() {
+    const that = this;
+    const [err, data] = await to(api.yunduanzi());
+    if (err || !data) return;
+    let domStr = `
+            <p style="padding-bottom: 8px;">喵喵，来自 <b style="color: #ff7d00;">网抑云</b> 的段子</p>
+            <p style="border-top: 1px solid #f4f4f4;padding-top: 8px;"><b>${data}</b></p>
+        `;
+    that.showDom(domStr);
+  }
+
+  async sayRainbowfart() {
+    const that = this;
+    const [err, data] = await to(api.rainbowfart());
+    if (err || !data) return;
+    let domStr = `喵喵，<b style="color: #ff7d00;">${data}</b>`;
     that.showDom(domStr);
   }
 

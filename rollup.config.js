@@ -3,6 +3,7 @@ import resolve from "@rollup/plugin-node-resolve";
 import commonjs from "@rollup/plugin-commonjs";
 import babel from "@rollup/plugin-babel";
 import polyfillNode from "rollup-plugin-polyfill-node";
+import copy from "rollup-plugin-copy";
 import styles from "rollup-plugin-styles";
 import fs from "fs";
 import * as path from "path";
@@ -27,8 +28,16 @@ const models = fileTree("public/models").map(it => ({
 }));
 fs.writeFileSync("src/models.js", "export default " + JSON.stringify(models) + ";");
 
-fs.writeFileSync("README.md", String(fs.readFileSync("README.md"))
-  .replace(/bundle.(\d+\.\d+\.\d+).min.js/gm, `bundle.${version}.min.js`));
+const metaFile = ".tampermonkeymeta";
+const meta = String(fs.readFileSync(metaFile))
+  .replace(/@version(\s+)\d+\.\d+\.\d+/m, `@version$1${version}`)
+  .replace(/bundle.(\d+\.\d+\.\d+).min.js/m, `bundle.${version}.min.js`);
+fs.writeFileSync(metaFile, meta);
+const readmeFile = "README.md";
+const readme = String(fs.readFileSync(readmeFile))
+  .replace(/\.tampermonkeymeta\?v=\d+\.\d+\.\d+/gm, `.tampermonkeymeta?v=${version}`)
+  .replace(/```tampermonkeymeta(.+)?```/sm, `\`\`\`tampermonkeymeta\n${meta}\n\`\`\``);
+fs.writeFileSync(readmeFile, readme);
 
 // 移除插件对live2d runtime的校验
 function removePLDRuntimeCheck() {
@@ -40,17 +49,27 @@ function removePLDRuntimeCheck() {
       }
       return code;
     },
+    // writeBundle(options) {
+    //   const file = options.file;
+    //   const meta = String(fs.readFileSync(".tampermonkeymeta"));
+    //   const script = String(fs.readFileSync(file));
+    //   fs.writeFileSync(file, meta + "\n\n\n" + script);
+    // },
   };
 }
+
+const output = `public/bundle.${version}.min.js`;
 
 export default function() {
   return {
     input: "src/index.js",
-    output: {
-      file: `public/bundle.${version}.min.js`,
-      format: "iife",
-      plugins: [terser()],
-    },
+    output: [
+      {
+        file: output,
+        format: "iife",
+        plugins: [terser()],
+      },
+    ],
     plugins: [
       removePLDRuntimeCheck(),
       commonjs(),
@@ -65,6 +84,12 @@ export default function() {
       }),
       styles({
         minimize: true,
+      }),
+      copy({
+        targets: [
+          { src: output, dest: "public/", rename: () => "bundle.min.js" },
+        ],
+        hook: "writeBundle",
       }),
     ],
   };

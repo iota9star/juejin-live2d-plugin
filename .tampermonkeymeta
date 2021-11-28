@@ -1,0 +1,28 @@
+// ==UserScript==
+// @name         掘金live2d插件
+// @namespace    https://github.com/iota9star/juejin-live2d-plugin
+// @description  为掘金页面添加live2d形象，辅助实现一些功能
+// @author       iota9star
+// @match        juejin.cn/*
+// @version      0.2.0
+// @icon         https://lf3-cdn-tos.bytescm.com/obj/static/xitu_juejin_web/6bdafd801c878b10edb5fed5d00969e9.svg
+// @require      https://cubism.live2d.com/sdk-web/cubismcore/live2dcubismcore.min.js
+// @require      https://cdn.jsdelivr.net/gh/dylanNew/live2d/webgl/Live2D/lib/live2d.min.js
+// @require      https://cdn.jsdelivr.net/gh/iota9star/juejin-live2d-plugin@master/public/bundle.0.2.0.min.js
+// @grant        GM_setValue
+// @grant        GM_getValue
+// @grant        GM_xmlhttpRequest
+// @run-at       document-idle
+// @connect      juejin.cn
+// @connect      juejin.im
+// @connect      juejin.org
+// @connect      jsdelivr.net
+// @connect      github.com
+// @connect      hitokoto.cn
+// @connect      jinrishici.com
+// @connect      weibo.com
+// @connect      weibo.cn
+// @connect      bing.com
+// @connect      shadiao.app
+// @connect      yduanzi.com
+// ==/UserScript==

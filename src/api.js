@@ -1,6 +1,6 @@
 import { get, post } from "./fake";
 import to from "await-to-js";
-import { cr, encrypt } from "./xiaoice";
+import { cr, encrypt } from "./xiaoiceaes";
 
 
 export default {
@@ -136,6 +136,42 @@ export default {
     if (err || !resp) return undefined;
     const { lottery_name: lotteryName = "", lottery_image: lotteryImage } = resp.data || {};
     return { lotteryName, lotteryImage };
+  },
+  async yunduanzi() {
+    const [err, resp] = await to(get("https://www.yduanzi.com/duanzi/getduanzi", {
+      headers: {
+        "HOST": "www.yduanzi.com",
+        "Origin": "https://www.yduanzi.com",
+        "Referer": "https://www.yduanzi.com/?utm_source=shadiao.app",
+        "content-type": "application/json",
+      },
+    }));
+    if (err || !resp) return undefined;
+    const { duanzi, qiafan } = resp || {};
+    if (qiafan) return undefined;
+    return duanzi;
+  },
+  async rainbowfart() {
+    const [err, resp] = await to(get("https://chp.shadiao.app/api.php", {
+      responseType: "text",
+      headers: {
+        "content-type": "text/html",
+        "referer": "https://chp.shadiao.app/",
+      },
+    }));
+    if (err || !resp) return undefined;
+    return resp;
+  },
+  async jitang() {
+    const [err, resp] = await to(get("https://du.shadiao.app/api.php", {
+      responseType: "text",
+      headers: {
+        "content-type": "text/html",
+        "referer": "https://du.shadiao.app/",
+      },
+    }));
+    if (err || !resp) return undefined;
+    return resp;
   },
   async hitokoto() {
     const [err, resp] = await to(get("https://v1.hitokoto.cn/"));
