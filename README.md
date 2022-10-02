@@ -56,7 +56,7 @@ GIF录制帧数和像素有点糊，实际效果还是不错的。猛男喜欢�
 - 打开油猴管理面板，切换到 **实用工具** 菜单  
 - 往 **从URL安装** 表单输入下面地址，点击 **安装** 安装按钮即可  
 
-> `https://raw.githubusercontent.com/iota9star/juejin-live2d-plugin/master/.tampermonkeymeta?v=0.3.1`
+> `https://raw.githubusercontent.com/iota9star/juejin-live2d-plugin/master/.tampermonkeymeta?v=0.3.2`
 
 #### 方式二
 
@@ -68,12 +68,13 @@ GIF录制帧数和像素有点糊，实际效果还是不错的。猛男喜欢�
 // @namespace    https://github.com/iota9star/juejin-live2d-plugin
 // @description  为掘金页面添加live2d形象，辅助实现一些功能
 // @author       iota9star
-// @match        juejin.cn/*
-// @version      0.3.1
+// @match        http://*/*
+// @match        https://*/*
+// @version      0.3.2
 // @icon         https://lf3-cdn-tos.bytescm.com/obj/static/xitu_juejin_web/6bdafd801c878b10edb5fed5d00969e9.svg
 // @require      https://cubism.live2d.com/sdk-web/cubismcore/live2dcubismcore.min.js
 // @require      https://cdn.jsdelivr.net/gh/dylanNew/live2d/webgl/Live2D/lib/live2d.min.js
-// @require      https://raw.githubusercontent.com/iota9star/juejin-live2d-plugin/master/public/bundle.0.3.1.min.js
+// @require      https://raw.githubusercontent.com/iota9star/juejin-live2d-plugin/master/public/bundle.0.3.2.min.js
 // @grant        GM_setValue
 // @grant        GM_getValue
 // @grant        GM_xmlhttpRequest
@@ -95,6 +96,10 @@ GIF录制帧数和像素有点糊，实际效果还是不错的。猛男喜欢�
 ```
 
 ### 版本更新
+
+- 0.3.2
+
+> 在掘金之外跑签到等操作
 
 - 0.3.1
 

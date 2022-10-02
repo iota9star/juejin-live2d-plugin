@@ -885,7 +885,23 @@ class JuejinLive2dPlugin {
   }
 }
 
-if (self === top) {
-  window[key] = new JuejinLive2dPlugin(_config).initLive2d();
+async function runOutsideJuejin() {
+  const [err1, status] = await to(api.growthStatus());
+  if (err1 || status) {
+    return;
+  }
+  await to(api.dipLucky());
+  await to(api.checkIn());
 }
+
+if (location.host.endsWith("juejin.cn")) {
+  if (self === top) {
+    window[key] = new JuejinLive2dPlugin(_config).initLive2d();
+  }
+} else {
+  runOutsideJuejin().finally(() => {});
+}
+
+
+
 

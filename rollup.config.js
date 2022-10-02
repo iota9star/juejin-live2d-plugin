@@ -1,4 +1,4 @@
-import { terser } from "rollup-plugin-terser";
+import {terser} from "rollup-plugin-terser";
 import resolve from "@rollup/plugin-node-resolve";
 import commonjs from "@rollup/plugin-commonjs";
 import babel from "@rollup/plugin-babel";
@@ -7,7 +7,7 @@ import copy from "rollup-plugin-copy";
 import styles from "rollup-plugin-styles";
 import fs from "fs";
 import * as path from "path";
-import { version } from "./package.json";
+import {version} from "./package.json";
 
 
 function fileTree(dir, files = []) {
@@ -60,14 +60,26 @@ function removePLDRuntimeCheck() {
 
 const output = `public/bundle.${version}.min.js`;
 
-export default function() {
+export default function () {
   return {
     input: "src/index.js",
     output: [
       {
         file: output,
         format: "iife",
-        plugins: [terser()],
+        plugins: [
+          terser({
+              format: {
+                comments: false,
+              },
+              compress: {
+                drop_console: true,
+                drop_debugger: true,
+                pure_funcs: ["console.log", "console.error"],
+              }
+            },
+          ),
+        ],
       },
     ],
     plugins: [
@@ -87,7 +99,7 @@ export default function() {
       }),
       copy({
         targets: [
-          { src: output, dest: "public/", rename: () => "bundle.min.js" },
+          {src: output, dest: "public/", rename: () => "bundle.min.js"},
         ],
         hook: "writeBundle",
       }),
