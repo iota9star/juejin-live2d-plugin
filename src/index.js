@@ -180,11 +180,15 @@ class JuejinLive2dPlugin {
       const live2d = document.createElement("canvas");
       const config = that.config;
       const {position} = config.live2d;
-      if (position) {
+      if (position && position.hasOwnProperty('top')) {
         that.addStyle(live2d, "transform", `translate(${position.left}px,${position.top}px)`);
       } else {
-        const {clientHeight} = document.documentElement;
-        const top = clientHeight - config.live2d.size;
+        const win = window,
+          doc = document,
+          docElem = doc.documentElement,
+          body = doc.getElementsByTagName('body')[0],
+          height = win.innerHeight || docElem.clientHeight || body.clientHeight;
+        const top = height - config.live2d.size;
         that.config.live2d.position = {left: 0, top};
         that.addStyle(live2d, "transform", `translate(0px,${top}px)`);
       }
@@ -881,5 +885,7 @@ class JuejinLive2dPlugin {
   }
 }
 
-window[key] = new JuejinLive2dPlugin(_config).initLive2d();
+if (self === top) {
+  window[key] = new JuejinLive2dPlugin(_config).initLive2d();
+}
 
