@@ -1,15 +1,15 @@
 import "./index.scss";
 import _config from "./config";
-import { ls } from "./fake";
+import {ls} from "./fake";
 import solarLunar from "solarLunar";
 import api from "./api";
 import to from "await-to-js";
-import { Application } from "@pixi/app";
-import { Renderer } from "@pixi/core";
-import { Ticker, TickerPlugin } from "@pixi/ticker";
-import { InteractionManager } from "@pixi/interaction";
-import { Live2DModel } from "pixi-live2d-display";
-import { createApp } from "petite-vue";
+import {Application} from "@pixi/app";
+import {Renderer} from "@pixi/core";
+import {Ticker, TickerPlugin} from "@pixi/ticker";
+import {InteractionManager} from "@pixi/interaction";
+import {Live2DModel} from "pixi-live2d-display";
+import {createApp} from "petite-vue";
 import _merge from "lodash/merge";
 import minimatch from "minimatch";
 
@@ -112,7 +112,7 @@ class JuejinLive2dPlugin {
     widget.style.width = `${ww}px`;
     widget.style.height = `${wh}px`;
     let live2d = that.config.live2d;
-    let { left, top } = live2d.position || { left: 0, top: 0 };
+    let {left, top} = live2d.position || {left: 0, top: 0};
     that.addStyle(widget, "transform", `translate(${left}px,${top}px)`);
     model.scale.set(scale);
     if (that.app.stage.children.length) {
@@ -179,13 +179,13 @@ class JuejinLive2dPlugin {
     if (!document.getElementById(that.live2dElId)) {
       const live2d = document.createElement("canvas");
       const config = that.config;
-      const { position } = config.live2d;
+      const {position} = config.live2d;
       if (position) {
         that.addStyle(live2d, "transform", `translate(${position.left}px,${position.top}px)`);
       } else {
-        const { clientHeight } = document.documentElement;
+        const {clientHeight} = document.documentElement;
         const top = clientHeight - config.live2d.size;
-        that.config.live2d.position = { left: 0, top };
+        that.config.live2d.position = {left: 0, top};
         that.addStyle(live2d, "transform", `translate(0px,${top}px)`);
       }
       live2d.id = that.live2dElId;
@@ -195,7 +195,7 @@ class JuejinLive2dPlugin {
       let dragStartX = 0;
       let dragStartY = 0;
       live2d.ondragstart = (e) => {
-        const { left, top } = e.target.getBoundingClientRect();
+        const {left, top} = e.target.getBoundingClientRect();
         elX = left;
         elY = top;
         dragStartX = e.clientX;
@@ -210,15 +210,15 @@ class JuejinLive2dPlugin {
         if (top < 0) {
           top = 0;
         }
-        const { width, height } = e.target.getBoundingClientRect();
-        const { clientWidth, clientHeight } = document.documentElement;
+        const {width, height} = e.target.getBoundingClientRect();
+        const {clientWidth, clientHeight} = document.documentElement;
         if (left + width > clientWidth) {
           left = clientWidth - width;
         }
         if (top + height > clientHeight) {
           top = clientHeight - height;
         }
-        config.live2d.position = { left, top };
+        config.live2d.position = {left, top};
         that.addStyle(live2d, "transform", `translate(${left}px,${top}px)`);
         that.syncConfig();
       };
@@ -234,11 +234,11 @@ class JuejinLive2dPlugin {
     const that = this;
     if (!document.getElementById(that.widgetElId)) {
       const wrapper = document.createElement("div");
-      const { position } = that.config.widgets;
+      const {position} = that.config.widgets;
       if (position) {
         that.addStyle(wrapper, "transform", `translate(${position.left}px,${-position.bottom}px)`);
       } else {
-        that.config.widgets.position = { left: 24, bottom: 24 };
+        that.config.widgets.position = {left: 24, bottom: 24};
       }
       wrapper.id = that.widgetElId;
       wrapper.draggable = that.config.widgets.draggable;
@@ -247,7 +247,7 @@ class JuejinLive2dPlugin {
       let dragStartX = 0;
       let dragStartY = 0;
       wrapper.ondragstart = (e) => {
-        const { left, top } = e.target.getBoundingClientRect();
+        const {left, top} = e.target.getBoundingClientRect();
         elX = left;
         elY = top;
         dragStartX = e.clientX;
@@ -262,8 +262,8 @@ class JuejinLive2dPlugin {
         if (top < 0) {
           top = 0;
         }
-        const { width, height } = e.target.getBoundingClientRect();
-        const { clientWidth, clientHeight } = document.documentElement;
+        const {width, height} = e.target.getBoundingClientRect();
+        const {clientWidth, clientHeight} = document.documentElement;
         if (left + width > clientWidth) {
           left = clientWidth - width;
         }
@@ -271,7 +271,7 @@ class JuejinLive2dPlugin {
           top = clientHeight - height;
         }
         let bottom = clientHeight - (top + height);
-        that.config.widgets.position = { left, bottom };
+        that.config.widgets.position = {left, bottom};
         that.relayoutWidgets();
       };
       const box = document.createElement("div");
@@ -322,9 +322,9 @@ class JuejinLive2dPlugin {
   limitWidgets() {
     const that = this;
     const widgets = that.config.widgets;
-    const { clientWidth, clientHeight } = document.documentElement;
-    let { left, bottom } = widgets.position;
-    let { width, height } = document.getElementById(that.widgetElId).getBoundingClientRect();
+    const {clientWidth, clientHeight} = document.documentElement;
+    let {left, bottom} = widgets.position;
+    let {width, height} = document.getElementById(that.widgetElId).getBoundingClientRect();
     if (width > clientWidth) {
       width = clientWidth;
     }
@@ -345,7 +345,7 @@ class JuejinLive2dPlugin {
     }
     left = Math.floor(left);
     bottom = Math.floor(bottom);
-    widgets.position = { left, bottom };
+    widgets.position = {left, bottom};
     that.syncConfig();
   }
 
@@ -498,7 +498,7 @@ class JuejinLive2dPlugin {
           that.syncConfig();
         },
         handleAddModel() {
-          const { key, value } = this.newModel;
+          const {key, value} = this.newModel;
           if (!key) {
             this.err = "模型名称不能为空";
             return;
@@ -517,7 +517,7 @@ class JuejinLive2dPlugin {
             this.err = "模型名称已存在";
             return;
           }
-          this.config.models = [...this.config.models, { ...this.newModel }];
+          this.config.models = [...this.config.models, {...this.newModel}];
           this.selectedKey = this.newModel.key;
           this.showLoading("加载模型中，请稍候...");
           that.config = this.config;
@@ -557,8 +557,8 @@ class JuejinLive2dPlugin {
   limitLive2d() {
     const that = this;
     const live2d = that.config.live2d;
-    const { clientWidth, clientHeight } = document.documentElement;
-    let { left, top } = live2d.position;
+    const {clientWidth, clientHeight} = document.documentElement;
+    let {left, top} = live2d.position;
     let size = live2d.size;
     let maxSize = Math.min(clientWidth, clientHeight);
     if (size > maxSize) {
@@ -580,7 +580,7 @@ class JuejinLive2dPlugin {
       top = clientHeight - size;
     }
     live2d.size = size;
-    live2d.position = { left, top };
+    live2d.position = {left, top};
     that.syncConfig();
   }
 
@@ -671,7 +671,7 @@ class JuejinLive2dPlugin {
     const that = this;
     const [err, data] = await to(api.weiboTop());
     if (err || !data) return;
-    const { word } = data;
+    const {word} = data;
     const domStr = `<p style="padding-bottom: 8px;margin-bottom: 8px;border-bottom: 1px solid #f4f4f4;">微博热搜</p><a href="https://s.weibo.com/weibo?q=${encodeURIComponent(word)}&Refer=realtime_weibo" style="text-decoration: none;color: #ff7d00;" target="_blank">${word}</a>`;
     that.showDom(domStr);
   }
@@ -680,7 +680,7 @@ class JuejinLive2dPlugin {
     const that = this;
     const [err, data] = await to(api.event());
     if (err || !data) return;
-    const { image_center_web: picture, url, title } = data;
+    const {image_center_web: picture, url, title} = data;
     const domStr = `<span class="nt">»</span><a href="${url}" style="text-decoration: none;"><img style="width: 100%;border-radius: 12px;" src="${picture}" alt="${title}"></a>`;
     that.showDom(domStr, {
       backgroundColor: "transparent",
@@ -693,7 +693,7 @@ class JuejinLive2dPlugin {
     const that = this;
     const [err, data] = await to(api.adverts());
     if (err || !data) return;
-    const { picture, url, title } = data;
+    const {picture, url, title} = data;
     const domStr = `<span class="nt">»</span><a href="${url}" style="text-decoration: none;"><img style="width: 100%;border-radius: 12px;" src="${picture}" alt="${title}"></a>`;
     that.showDom(domStr, {
       backgroundColor: "transparent",
@@ -705,7 +705,7 @@ class JuejinLive2dPlugin {
   async sayStatistic() {
     const that = this;
     const map = {
-      all_article: "文章总数",
+      all_article: "总文章数",
       all_article_display: "文章展现数",
       all_article_collect: "文章收藏数",
       all_article_view: "文章阅读数",
@@ -725,8 +725,8 @@ class JuejinLive2dPlugin {
     const [err, data] = await to(api.statistic(Object.keys(map)));
     if (err || !data) return;
     let domStr = "";
-    const { date, datas = {} } = data;
-    for (let [key, { cnt, than_before }] of Object.entries(datas)) {
+    const {date, datas = {}} = data;
+    for (let [key, {cnt, than_before}] of Object.entries(datas)) {
       let name = map[key];
       domStr += `
                 <div class="stat-item">
@@ -763,12 +763,17 @@ class JuejinLive2dPlugin {
     if (status) {
       return that.sayGrowth();
     }
+    await to(api.dipLucky());
     const [err2, data] = await to(api.checkIn());
     if (err2 || !data) return;
-    const { incr, sum, lotteryName, lotteryImage } = data;
+    const {incr, sum, lotteryName, lotteryImage} = data;
     let domStr = `
             喵喵，我已经帮您签到抽奖啦。获得矿石 <b style="color: #ff7d00">+${incr}</b> ，您现在共有 <b style="color: #ff7d00">${sum}</b> 矿石
         `;
+    const [, luck] = await to(api.myLucky());
+    if (luck) {
+      domStr += `，幸运值 <b style="color: #ff7d00">${luck.totalValue}</b>`;
+    }
     if (lotteryName) {
       domStr += `<p style="vertical-align: middle;">免费抽奖获得 <img style="height: 24px;" src="${lotteryImage}" alt="${lotteryName}"> <b style="color: #ff7d00">${lotteryName}</b><p/>`;
     }
@@ -779,11 +784,15 @@ class JuejinLive2dPlugin {
     const that = this;
     const [err, data] = await to(api.growthCount());
     if (err || !data) return;
-    const { count, sum } = data;
+    const {count, sum} = data;
     let domStr = `喵喵，主人已经连续签到 <b style="color: #ff7d00;">${count}</b> 天啦，总共签到 <b style="color: #ff7d00;">${sum}</b> 天。`;
     const [, dat] = await to(api.growthPoints());
     if (dat) {
       domStr += `您现在共有 <b style="color: #ff7d00;">${dat}</b> 矿石`;
+    }
+    const [, luck] = await to(api.myLucky());
+    if (luck) {
+      domStr += `，幸运值 <b style="color: #ff7d00">${luck.totalValue}</b>`;
     }
     that.showDom(domStr);
   }
@@ -792,7 +801,7 @@ class JuejinLive2dPlugin {
     const that = this;
     const [err, data] = await to(api.coderCalendar());
     if (err || !data) return;
-    const { aphorism, shouldOrNot } = data;
+    const {aphorism, shouldOrNot} = data;
     let domStr = `
             <p style="padding-bottom: 8px;">喵喵，今日 <b style="color: #ff7d00;">${shouldOrNot}</b></p>
             <p style="border-top: 1px solid #f4f4f4;padding-top: 8px;"><b>${aphorism}</b></p>
@@ -804,7 +813,7 @@ class JuejinLive2dPlugin {
     const that = this;
     const [err, data] = await to(api.hitokoto());
     if (err || !data) return;
-    const { from, hitokoto } = data;
+    const {from, hitokoto} = data;
     let domStr = `
             <p style="padding-bottom: 8px;">喵喵，来自 <b style="color: #ff7d00;">${from}</b> 的一言</p>
             <p style="border-top: 1px solid #f4f4f4;padding-top: 8px;"><b>${hitokoto}</b></p>
@@ -846,7 +855,7 @@ class JuejinLive2dPlugin {
     const that = this;
     const [err, data] = await to(api.shici());
     if (err || !data) return;
-    const { origin, content, author } = data;
+    const {origin, content, author} = data;
     let domStr = `
             <p style="padding-bottom: 8px;">喵喵，来自 <b style="color: #ff7d00;">${author}</b> 的诗词</p>
             <p style="border-top: 1px solid #f4f4f4;padding-top: 8px;"><b>${[content, origin].filter(it => !!it).join(" - ")}</b></p>

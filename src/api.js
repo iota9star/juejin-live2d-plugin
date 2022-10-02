@@ -1,6 +1,6 @@
-import { get, post } from "./fake";
+import {get, post} from "./fake";
 import to from "await-to-js";
-import { cr, encrypt } from "./xiaoiceaes";
+import {cr, encrypt} from "./xiaoiceaes";
 
 
 export default {
@@ -11,7 +11,7 @@ export default {
    * @returns {Promise<string>}
    */
   async adverts() {
-    const [err, resp] = await to(post("https://api.juejin.cn/content_api/v1/advert/query_adverts", {
+    const [err, resp] = await to(post("https://api.juejin.cn/content_api/v1/advert/query_adverts?spider=0", {
       data: JSON.stringify({
         "position": 100,
         "platform": 2608,
@@ -29,7 +29,7 @@ export default {
    * @returns {Promise<undefined|*>}
    */
   async event() {
-    const [err, resp] = await to(post("https://api.juejin.cn/study_api/v1/events/get_by_page", {
+    const [err, resp] = await to(post("https://api.juejin.cn/study_api/v1/events/get_by_page?spider=0", {
       data: JSON.stringify({
         "category_id": "0",
         "event_type": Math.random() < 0.5 ? 25 : 26,
@@ -52,7 +52,7 @@ export default {
   },
   /**
    * {"err_no":0,"err_msg":"success","data":{"date":"2021-11-02","datas":{"all_article_collect":{"cnt":1,"than_before":2},"all_article_comment":{"cnt":1,"than_before":0},"all_article_digg":{"cnt":1,"than_before":0},"all_article_view":{"cnt":1,"than_before":1},"all_follower":{"cnt":1,"than_before":1}}}}
-   * @returns {Promise<{date, datas}>}
+   * @returns {Promise<{date, datas}|undefined>}
    * @param types
    */
   async statistic(types = []) {
@@ -62,7 +62,7 @@ export default {
       datas: types,
       "user_id": userId,
     };
-    const [err, resp] = await to(post("https://api.juejin.cn/content_api/v1/author_center/data/card", {
+    const [err, resp] = await to(post("https://api.juejin.cn/content_api/v1/author_center/data/card?spider=0", {
       data: JSON.stringify(params),
     }));
     if (err || !resp) return undefined;
@@ -70,7 +70,7 @@ export default {
       date,
       datas,
     } = resp.data || {};
-    return { date, datas };
+    return {date, datas};
   },
   /**
    * 签到统计
@@ -78,10 +78,10 @@ export default {
    * @returns {Promise<{count: number, sum: number}>}
    */
   async growthCount() {
-    const [err, { data }] = await to(get("https://api.juejin.cn/growth_api/v1/get_counts"));
+    const [err, {data}] = await to(get("https://api.juejin.cn/growth_api/v1/get_counts?spider=0"));
     if (err) return undefined;
-    const { cont_count: count = 0, sum_count: sum = 0 } = data || {};
-    return { count, sum };
+    const {cont_count: count = 0, sum_count: sum = 0} = data || {};
+    return {count, sum};
   },
   /**
    * 签到状态
@@ -89,7 +89,7 @@ export default {
    * @returns {Promise<boolean>}
    */
   async growthStatus() {
-    const [err, resp] = await to(get("https://api.juejin.cn/growth_api/v1/get_today_status"));
+    const [err, resp] = await to(get("https://api.juejin.cn/growth_api/v1/get_today_status?spider=0"));
     if (err || !resp) return undefined;
     return !!resp.data;
   },
@@ -99,7 +99,7 @@ export default {
    * @returns {Promise<number>}
    */
   async growthPoints() {
-    const [err, resp] = await to(get("https://api.juejin.cn/growth_api/v1/get_cur_point"));
+    const [err, resp] = await to(get("https://api.juejin.cn/growth_api/v1/get_cur_point?spider=0"));
     if (err || !resp) return undefined;
     return resp.data;
   },
@@ -109,10 +109,10 @@ export default {
    * @returns {Promise<{aphorism: string, shouldOrNot: string}>}
    */
   async coderCalendar() {
-    const [err, resp] = await to(get("https://api.juejin.cn/growth_api/v1/get_coder_calendar"));
+    const [err, resp] = await to(get("https://api.juejin.cn/growth_api/v1/get_coder_calendar?spider=0"));
     if (err || !resp) return undefined;
-    const { aphorism = "", should_or_not: shouldOrNot = "" } = resp.data || {};
-    return { aphorism, shouldOrNot };
+    const {aphorism = "", should_or_not: shouldOrNot = ""} = resp.data || {};
+    return {aphorism, shouldOrNot};
   },
   /**
    * 签到
@@ -120,22 +120,72 @@ export default {
    * @returns {Promise<{incr: number, sum: number}>}
    */
   async checkIn() {
-    const [err, resp] = await to(post("https://api.juejin.cn/growth_api/v1/check_in"));
+    const [err, resp] = await to(post("https://api.juejin.cn/growth_api/v1/check_in?spider=0"));
     if (err || !resp) return undefined;
-    const { incr_point: incr = 0, sum_point: sum = 0 } = (resp || {}).data || {};
+    const {incr_point: incr = 0, sum_point: sum = 0} = (resp || {}).data || {};
     const [, dat] = await to(this.draw());
-    return { incr, sum, ...(dat || {}) };
+    return {incr, sum, ...(dat || {})};
   },
   /**
    * 抽奖
    * {"err_no":0,"err_msg":"success","data":{"id":19,"lottery_id":"xxxx","lottery_name":"66矿石","lottery_type":1,"lottery_image":"https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/32ed6a7619934144882d841761b63d3c~tplv-k3u1fbpfcp-no-mark:0:0:0:0.image","lottery_desc":"","history_id":"xxxxxx"}}
-   * @returns {Promise<{lotteryImage, lotteryName: string}>}
+   * @returns {Promise<{lotteryImage, lotteryName: string}|undefined>}
    */
   async draw() {
-    const [err, resp] = await to(post("https://api.juejin.cn/growth_api/v1/lottery/draw"));
+    const [err, resp] = await to(post("https://api.juejin.cn/growth_api/v1/lottery/draw?spider=0"));
     if (err || !resp) return undefined;
-    const { lottery_name: lotteryName = "", lottery_image: lotteryImage } = resp.data || {};
-    return { lotteryName, lotteryImage };
+    const {lottery_name: lotteryName = "", lottery_image: lotteryImage} = resp.data || {};
+    return {lotteryName, lotteryImage};
+  },
+  /**
+   * 沾沾喜气
+   * {"err_no":0,"err_msg":"success","data":{"dip_action":1,"has_dip":false,"total_value":2138,"dip_value":10}}
+   * @returns {Promise<{totalValue: number, hasDip: boolean, dipValue: number}|undefined>}
+   */
+  async dipLucky() {
+    const that = this;
+    const lottery_history_id = await that.globalBig();
+    if (!lottery_history_id) {
+      return undefined;
+    }
+    const [err, resp] = await to(post(`https://api.juejin.cn/growth_api/v1/lottery_lucky/dip_lucky?aid=2608&uuid=${7104994227718096397 + Date.now()}&spider=0`, {
+        data: JSON.stringify({lottery_history_id}),
+      },
+    ));
+    if (err || !resp) return undefined;
+    const {dip_value: dipValue = 0, has_dip: hasDip = false, total_value: totalValue = 0} = resp.data || {};
+    return {dipValue, hasDip, totalValue};
+  },
+  /**
+   * 当前幸运值
+   * {"err_no":0,"err_msg":"success","data":{"id":0,"user_id":"1591748568562829","total_value":2138,"history_value":2430,"history_count":486,"history_show":1,"ctime":1639730858,"mtime":1664693666}}
+   * @returns {Promise<{totalValue: number, historyValue: number, historyCount: number}|undefined>}
+   */
+  async myLucky() {
+    const [err, resp] = await to(post(`https://api.juejin.cn/growth_api/v1/lottery_lucky/my_lucky?aid=2608&uuid=${7104994227718096397 + Date.now()}&spider=0`));
+    if (err || !resp) return undefined;
+    const {
+      total_value: totalValue = 0,
+      history_value: historyValue = 0,
+      history_count: historyCount = 0
+    } = resp.data || {};
+    return {totalValue, historyValue, historyCount};
+  },
+  /**
+   * 围观大奖
+   * @returns {Promise<string|undefined>}
+   */
+  async globalBig() {
+    const [err, resp] = await to(post(`https://api.juejin.cn/growth_api/v1/lottery_history/global_big?aid=2608&uuid=${7104994227718096397 + Date.now()}&spider=0`, {
+        data: JSON.stringify({"page_no": 1, "page_size": 5}),
+      },
+    ));
+    if (err || !resp) return undefined;
+    const lotteries = (resp.data || {}).lotteries || [];
+    if (lotteries.length) {
+      return lotteries[0].history_id;
+    }
+    return undefined;
   },
   async yunduanzi() {
     const [err, resp] = await to(get("https://www.yduanzi.com/duanzi/getduanzi", {
@@ -147,7 +197,7 @@ export default {
       },
     }));
     if (err || !resp) return undefined;
-    const { duanzi, qiafan } = resp || {};
+    const {duanzi, qiafan} = resp || {};
     if (qiafan) return undefined;
     return duanzi;
   },
@@ -191,7 +241,7 @@ export default {
   async profile() {
     const [err, resp] = await to(get("https://api.juejin.cn/user_api/v1/user/profile_id"));
     if (err || !resp) return undefined;
-    const { profile_id: profileId } = resp.data || {};
+    const {profile_id: profileId} = resp.data || {};
     return profileId;
   },
   async xiaoiceConfig() {
@@ -213,7 +263,7 @@ export default {
     }
   },
   async talkWithXiaoIce(words) {
-    const { config: _conf = {} } = this.xiaoiceStore;
+    const {config: _conf = {}} = this.xiaoiceStore;
     let from;
     if (!_conf.conversationId) {
       await to(this.xiaoiceConfig());
@@ -221,7 +271,7 @@ export default {
     } else {
       from = "chatbox";
     }
-    const { config = {}, lastStr = "", lastTime = "" } = this.xiaoiceStore;
+    const {config = {}, lastStr = "", lastTime = ""} = this.xiaoiceStore;
     if (!config.conversationId) return undefined;
     const params = {
       conversationId: config.conversationId,
